@@ -81,7 +81,7 @@ def marker_callback(msg):
 				box_sample_count +=1 
 
 def gazebo_model_states_callback(msg):
-	global cube_pose,box_pose,robot_pose
+	global cube_pose,box_pose,robot_pose,is_box_detected,is_cube_detected
 	for i,name in  enumerate(msg.name):
 		if 'cube' in name:
 			Pose = msg.pose[i].position
@@ -97,7 +97,22 @@ def gazebo_model_states_callback(msg):
 			Pose = msg.pose[i].position
 			robot_pose = [Pose.x,Pose.y,Pose.z]
 
+def gazebo_link_states_callback(msg):
+	global cube_pose,box_pose,robot_pose,is_box_detected,is_cube_detected
+	for i,name in  enumerate(msg.name):
+		if 'my_cube' in name:
+			Pose = msg.pose[i].position
+			cube_pose = [Pose.x,Pose.y,Pose.z]
+			is_cube_detected = True
 
+		if 'my_box' in name:
+			Pose = msg.pose[i].position
+			box_pose = [Pose.x,Pose.y,Pose.z]
+			is_box_detected = True
+
+		if 'robot_base_link' in name:
+			Pose = msg.pose[i].position
+			robot_pose = [Pose.x,Pose.y,Pose.z]
 
 def move(x,y,z,phi,grip,base_x,base_y):
 	my_msg = Float64MultiArray()
@@ -127,26 +142,26 @@ if __name__ == '__main__':
 	# a 'try'-'except' clause
 	
 	rospy.wait_for_message("/gazebo/link_states",LinkStates)
-	print("Waiting for 5 seconds")
-	time.sleep(5)
+	# print("Waiting for 5 seconds")
+	time.sleep(1)
 	# rospy.Subscriber("/aruco_marker_publisher/markers",MarkerArray,marker_callback)
-	rospy.Subscriber("/gazebo/model_states",ModelStates,gazebo_model_states_callback)
+	# rospy.Subscriber("/gazebo/model_states",ModelStates,gazebo_model_states_callback)
+	rospy.Subscriber("/gazebo/link_states",LinkStates,gazebo_link_states_callback)
 	# rospy.sleep(100)
 	try:
 		while not rospy.is_shutdown():
 			if is_box_detected:
 				
 				state0 = np.array([0.0,0.125,0.06,0,0.03,0,0])
-				state1 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.16,cube_pose[1]])
-				step_size = 1000
+				state1 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.2,cube_pose[1]])
+				step_size = 300
 				rate = rospy.Rate(30)
 				states = [state1]
 				current_state = state0
-				for i in range(100):
-					print(i)
+				for i in range(10):
 					move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
 					rate.sleep()
-				time.sleep(5)
+				time.sleep(2)
 				for m,next_state in enumerate(states):
 					i = 0
 					step = (next_state-current_state)/step_size
@@ -160,17 +175,20 @@ if __name__ == '__main__':
 				is_cube_detected = False
 				cube_pose = None
 				print("Waiting for 20 secs")
-				time.sleep(20)
+				time.sleep(30)
 				while not is_cube_detected: print("Localizing cube")
 				if is_cube_detected:
-					state0 = np.array([0.0,0.125,0.06,0,0.03,1.24,-2.20])
-					state1 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2]+0.06,-pi/3,0.06,cube_pose[0]-0.16,cube_pose[1]])
-					state2 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2],-pi/2,0.06,cube_pose[0]-0.16,cube_pose[1]])
-					state3 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.16,cube_pose[1]])
-					state4 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2]+0.06,-pi/3,0.0368,cube_pose[0]-0.16,cube_pose[1]])
+					print(cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1])
+					state0 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.2,cube_pose[1]])
+					state1 = np.array([0.2,0.00,cube_pose[2]+0.06,-pi/3,0.06,cube_pose[0]-0.2,cube_pose[1]])
+					state2 = np.array([0.2,0.00,cube_pose[2],-pi/2,0.06,cube_pose[0]-0.2,cube_pose[1]])
+					state3 = np.array([0.2,0.00,cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
+					state4 = np.array([0.01,0.01,0.3,pi/2,0.0368,cube_pose[0]-0.2,cube_pose[1]])
+					state5 = np.array([0.01,0.01,0.3,pi/2,0.0368,0,0])
+					state6 = np.array([box_pose[0],box_pose[1],0.2,-pi/3,0.0368,0,0])
 					step_size = 100
 					rate = rospy.Rate(30)
-					states = [state1,state2,state3,state4]
+					states = [state1,state2,state3,state4,state5,state6]
 					current_state = state0
 					for i in range(100):
 						move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])

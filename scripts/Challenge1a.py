@@ -32,6 +32,7 @@ box_sample_count = 0
 
 cube_pose = None
 box_pose = None
+robot_pose = None
 
 
 
@@ -100,6 +101,22 @@ def move(x,y,z,phi,grip):
 	my_msg.data = [0, 0, theta1_val, theta2_val, theta3_val, theta4_val, pi/2,grip]
 	robot_state_publisher.publish(my_msg)
 
+def gazebo_link_states_callback(msg):
+	global cube_pose,box_pose,robot_pose,is_box_detected,is_cube_detected
+	for i,name in  enumerate(msg.name):
+		if 'my_cube' in name:
+			Pose = msg.pose[i].position
+			cube_pose = [Pose.x,Pose.y,Pose.z]
+			is_cube_detected = True
+
+		if 'my_box' in name:
+			Pose = msg.pose[i].position
+			box_pose = [Pose.x,Pose.y,Pose.z]
+			is_box_detected = True
+
+		if 'robot_base_link' in name:
+			Pose = msg.pose[i].position
+			robot_pose = [Pose.x,Pose.y,Pose.z]
 
 
 if __name__ == '__main__':
@@ -109,22 +126,23 @@ if __name__ == '__main__':
 	rospy.wait_for_message("/gazebo/link_states",LinkStates)
 	print("Waiting for 5 seconds")
 	time.sleep(5)
-	rospy.Subscriber("/aruco_marker_publisher/markers",MarkerArray,marker_callback)
+	# rospy.Subscriber("/aruco_marker_publisher/markers",MarkerArray,marker_callback)
+	rospy.Subscriber("/gazebo/link_states",LinkStates,gazebo_link_states_callback)
 	try:
 		while not rospy.is_shutdown():
 			if is_cube_detected and is_box_detected:
 				
 				state0 = np.array([0.0,0.125,0.06,0,0.03])
-				
-				state1 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2]+0.06,-pi/3,0.06])
-				state2 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2],-pi/2,0.06])
-				state3 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2],-pi/2,0.0368])
-				state4 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2]+0.06,-pi/3,0.0368])
-				state5 = np.array([int(box_pose[0])+0.001,box_pose[1]+0.03,box_pose[2]+0.2,-pi/3,0.0368])
-				state6 = np.array([int(box_pose[0])+0.001,box_pose[1]+0.02,box_pose[2]+0.2,-pi/3,0.045])
+				state1 = np.array([cube_pose[0]-0.04,cube_pose[1],cube_pose[2]+0.06,-pi/3,0.06])
+				state2 = np.array([cube_pose[0]-0.04,cube_pose[1],cube_pose[2],-pi/2,0.06])
+				state3 = np.array([cube_pose[0]-0.04,cube_pose[1],cube_pose[2],-pi/2,0.0368])
+				state4 = np.array([cube_pose[0]-0.04,cube_pose[1],cube_pose[2]+0.06,-pi/2,0.0368])
+				state5 = np.array([0.01,0.01,0.3,pi/2,0.0368])
+				state6 = np.array([int(box_pose[0])+0.001,box_pose[1]+0.03,box_pose[2]+0.2,-pi/3,0.0368])
+				state7 = np.array([int(box_pose[0])+0.001,box_pose[1]+0.02,box_pose[2]+0.2,-pi/3,0.045])
 				step_size = 100
 				rate = rospy.Rate(30)
-				states = [state1,state2,state3,state4,state5]
+				states = [state1,state2,state3,state4,state5,state6,state7]
 				current_state = state0
 				for i in range(100):
 					move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4])
