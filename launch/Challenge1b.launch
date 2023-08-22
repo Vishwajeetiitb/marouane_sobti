@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+    <launch>
+  
+   
+    <include file="$(find robotics_challenges)/launch/Challenge1b.launch" /> 
+    
+    <node pkg="marouane_sobti" name="robot_move_test" type="Challenge1b.py" output="screen" />
+
+    <!-- <node pkg="marouane_sobti" name="robot_move_test" type="robot_move_test.py" output="screen">  -->
+<!-- </node> -->
+ 
+        
+</launch>

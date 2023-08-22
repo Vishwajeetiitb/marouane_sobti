@@ -140,6 +140,7 @@ if __name__ == '__main__':
 				state4 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/2,0.0368])
 				state5 = np.array([0.01,0.01,0.3,pi/2,0.0368])
 				state6 = np.array([box_pose[0],box_pose[1],box_pose[2]+0.2,-pi/3,0.0368])
+				print(box_pose)
 				state7 = np.array([box_pose[0],box_pose[1],box_pose[2]+0.2,-pi/3,0.045])
 				step_size = 100
 				rate = rospy.Rate(30)
