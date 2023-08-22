@@ -187,8 +187,8 @@ if __name__ == '__main__':
 					state4 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
 					state5 = np.array([0.01,0.01,0.3,pi/2,0.0368,cube_pose[0]-0.2,cube_pose[1]])
 					state6 = np.array([0.01,0.01,0.3,pi/2,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
-					state7 = np.array([0.2,0.01,0.2,-pi/3,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
-					state8 = np.array([0.2,0.01,0.1,-pi/3,0.06,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
+					state7 = np.array([0.2*(box_pose[0]/abs(box_pose[0])),0.01,0.2,-pi/3,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
+					state8 = np.array([0.2*(box_pose[0]/abs(box_pose[0])),0.01,0.1,-pi/3,0.06,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
 					step_size = 100
 					rate = rospy.Rate(30)
 					states = [state1,state2,state3,state4,state5,state6,state7,state8]
