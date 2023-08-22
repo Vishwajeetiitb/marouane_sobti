@@ -33,6 +33,7 @@ box_sample_count = 0
 
 cube_pose = None
 box_pose = None
+robot_pose = None
 
 
 
@@ -80,11 +81,22 @@ def marker_callback(msg):
 				box_sample_count +=1 
 
 def gazebo_model_states_callback(msg):
-	global cube_pose,box_pose
+	global cube_pose,box_pose,robot_pose
 	for i,name in  enumerate(msg.name):
+		if 'cube' in name:
+			Pose = msg.pose[i].position
+			cube_pose = [Pose.x,Pose.y,Pose.z]
+			is_cube_detected = True
+
 		if 'box' in name:
 			Pose = msg.pose[i].position
-			cube_pose = [Pose[0],Pose[1],Pose[3]]
+			box_pose = [Pose.x,Pose.y,Pose.z]
+			is_box_detected = True
+
+		if name == 'robot':
+			Pose = msg.pose[i].position
+			robot_pose = [Pose.x,Pose.y,Pose.z]
+
 
 
 def move(x,y,z,phi,grip,base_x,base_y):
@@ -117,21 +129,15 @@ if __name__ == '__main__':
 	rospy.wait_for_message("/gazebo/link_states",LinkStates)
 	print("Waiting for 5 seconds")
 	time.sleep(5)
-	rospy.Subscriber("/aruco_marker_publisher/markers",MarkerArray,marker_callback)
+	# rospy.Subscriber("/aruco_marker_publisher/markers",MarkerArray,marker_callback)
 	rospy.Subscriber("/gazebo/model_states",ModelStates,gazebo_model_states_callback)
-	rospy.sleep(100)
+	# rospy.sleep(100)
 	try:
 		while not rospy.is_shutdown():
 			if is_box_detected:
 				
 				state0 = np.array([0.0,0.125,0.06,0,0.03,0,0])
-				state1 = np.array([0.0,0.125,0.06,0,0.03,1.24,-2.20])
-				# state1 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2]+0.06,-pi/3,0.06])
-				# state2 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2],-pi/2,0.06])
-				# state3 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2],-pi/2,0.0368])
-				# state4 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2]+0.06,-pi/3,0.0368])                
-				# state5 = np.array([int(box_pose[0])+0.001,box_pose[1]+0.03,box_pose[2]+0.2,-pi/3,0.0368])
-				# state6 = np.array([int(box_pose[0])+0.001,box_pose[1]+0.02,box_pose[2]+0.2,-pi/3,0.045])
+				state1 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.16,cube_pose[1]])
 				step_size = 1000
 				rate = rospy.Rate(30)
 				states = [state1]
@@ -158,10 +164,10 @@ if __name__ == '__main__':
 				while not is_cube_detected: print("Localizing cube")
 				if is_cube_detected:
 					state0 = np.array([0.0,0.125,0.06,0,0.03,1.24,-2.20])
-					state1 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2]+0.06,-pi/3,0.06,1.24,-2.20])
-					state2 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2],-pi/2,0.06,1.24,-2.20])
-					state3 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2],-pi/2,0.0368,1.24,-2.20])
-					state4 = np.array([cube_pose[0]-0.03,cube_pose[1],cube_pose[2]+0.06,-pi/3,0.0368,1.24,-2.20])
+					state1 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2]+0.06,-pi/3,0.06,cube_pose[0]-0.16,cube_pose[1]])
+					state2 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2],-pi/2,0.06,cube_pose[0]-0.16,cube_pose[1]])
+					state3 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.16,cube_pose[1]])
+					state4 = np.array([cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1],cube_pose[2]+0.06,-pi/3,0.0368,cube_pose[0]-0.16,cube_pose[1]])
 					step_size = 100
 					rate = rospy.Rate(30)
 					states = [state1,state2,state3,state4]

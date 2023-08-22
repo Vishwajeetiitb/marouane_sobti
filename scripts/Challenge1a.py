@@ -6,9 +6,9 @@ import rospy
 # type of message you are trying to publish
 from std_msgs.msg import Float64
 from std_msgs.msg import Float64MultiArray
-from sympy.matrices import Matrix
+# from sympy.matrices import Matrix
 # Define symbolic variables for joint angles
-from visual_kinematics.RobotSerial import *
+# from visual_kinematics.RobotSerial import *
 import numpy as np
 from math import pi
 from aruco_msgs.msg import MarkerArray
