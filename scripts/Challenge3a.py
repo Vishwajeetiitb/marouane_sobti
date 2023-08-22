@@ -31,7 +31,8 @@ is_box_detected = False
 cube_sample_count = 0
 box_sample_count = 0
 
-cube_pose = None
+cube_pose_list = None
+cube_seqeunce = None
 box_pose = None
 robot_pose = None
 
@@ -99,8 +100,16 @@ def gazebo_model_states_callback(msg):
 
 def gazebo_link_states_callback(msg):
 	global cube_pose,box_pose,robot_pose,is_box_detected,is_cube_detected
+	cube_pose_list = []
+	cube_seqeunce = []
+	
 	for i,name in  enumerate(msg.name):
 		if 'my_cube' in name:
+			id = int(name.replace('my_cube',''))
+			if id not in cube_seqeunce:
+				cube_seqeunce.append(id)
+				cube_pose_list.append([Pose.x,Pose.y,Pose.z])
+			  
 			Pose = msg.pose[i].position
 			cube_pose = [Pose.x,Pose.y,Pose.z]
 			is_cube_detected = True
@@ -173,41 +182,38 @@ if __name__ == '__main__':
 				# 		rate.sleep()
 				# 		current_state_state = next_state
 				# exit()
-				is_cube_detected = False
-				cube_pose = None
-				print("Waiting for 20 secs")
 				time.sleep(5)
-				while not is_cube_detected: print("Localizing cube")
-				if is_cube_detected:
-					# print(cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1])
-					state0 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.2,cube_pose[1]])
-					state1 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/3,0.06,cube_pose[0]-0.2,cube_pose[1]])
-					state2 = np.array([cube_pose[0],cube_pose[1],cube_pose[2],-pi/2,0.06,cube_pose[0]-0.2,cube_pose[1]])
-					state3 = np.array([cube_pose[0],cube_pose[1],cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
-					state4 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
-					state5 = np.array([0.01,0.01,0.3,pi/2,0.0368,cube_pose[0]-0.2,cube_pose[1]])
-					state6 = np.array([0.01,0.01,0.3,pi/2,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
-					state7 = np.array([0.2,0.01,0.2,-pi/3,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
-					state8 = np.array([0.2,0.01,0.1,-pi/3,0.06,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
-					step_size = 100
-					rate = rospy.Rate(30)
-					states = [state1,state2,state3,state4,state5,state6,state7,state8]
-					current_state = state0
-					for i in range(100):
-						move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
-						rate.sleep()
-						
-					time.sleep(5)
-					for m,next_state in enumerate(states):
-						i = 0
-						step = (next_state-current_state)/step_size
-						print(step*step_size)
-						while not rospy.is_shutdown() and i <step_size:
+				for cube_pose in cube_pose_list:
+					if is_cube_detected:
+						state0 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.2,cube_pose[1]])
+						state1 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/3,0.06,cube_pose[0]-0.2,cube_pose[1]])
+						state2 = np.array([cube_pose[0],cube_pose[1],cube_pose[2],-pi/2,0.06,cube_pose[0]-0.2,cube_pose[1]])
+						state3 = np.array([cube_pose[0],cube_pose[1],cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
+						state4 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
+						state5 = np.array([0.01,0.01,0.3,pi/2,0.0368,cube_pose[0]-0.2,cube_pose[1]])
+						state6 = np.array([0.01,0.01,0.3,pi/2,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
+						state7 = np.array([0.2,0.01,0.2,-pi/3,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
+						state8 = np.array([0.2,0.01,0.2,-pi/3,0.06,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
+						step_size = 100
+						rate = rospy.Rate(30)
+						states = [state1,state2,state3,state4,state5,state6,state7,state8]
+						current_state = state0
+						for i in range(100):
 							move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
-							i +=1
-							current_state =current_state + step
 							rate.sleep()
-							current_state_state = next_state
+                            
+                        
+						time.sleep(5)
+						for m,next_state in enumerate(states):
+							i = 0
+							step = (next_state-current_state)/step_size
+							print(step*step_size)
+							while not rospy.is_shutdown() and i <step_size:
+								move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
+								i +=1
+								current_state =current_state + step
+								rate.sleep()
+								current_state_state = next_state
 						
 					
 				exit()
