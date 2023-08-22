@@ -8,7 +8,7 @@ from std_msgs.msg import Float64
 from std_msgs.msg import Float64MultiArray
 from sympy.matrices import Matrix
 # Define symbolic variables for joint angles
-from visual_kinematics.RobotSerial import *
+# from visual_kinematics.RobotSerial import *
 import numpy as np
 from math import pi
 from aruco_msgs.msg import MarkerArray
@@ -185,10 +185,11 @@ if __name__ == '__main__':
 					state3 = np.array([0.2,0.00,cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
 					state4 = np.array([0.01,0.01,0.3,pi/2,0.0368,cube_pose[0]-0.2,cube_pose[1]])
 					state5 = np.array([0.01,0.01,0.3,pi/2,0.0368,0,0])
-					state6 = np.array([box_pose[0],box_pose[1],0.2,-pi/3,0.0368,0,0])
+					state6 = np.array([box_pose[0]-0.04*(box_pose[0]/abs(box_pose[0])),box_pose[1],0.2,-pi/3,0.0368,0,0])
+					state7 = np.array([box_pose[0]-0.04*(box_pose[0]/abs(box_pose[0])),box_pose[1],0.2,-pi/3,0.06,0,0])
 					step_size = 100
 					rate = rospy.Rate(30)
-					states = [state1,state2,state3,state4,state5,state6]
+					states = [state1,state2,state3,state4,state5,state6,state7]
 					current_state = state0
 					for i in range(100):
 						move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])

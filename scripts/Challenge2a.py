@@ -117,6 +117,7 @@ def gazebo_link_states_callback(msg):
 def move(x,y,z,phi,grip,base_x,base_y):
 	my_msg = Float64MultiArray()
 	x1 = (x**2 + y**2)**0.5 
+	x1 = x1 - (0.04*(x1/abs(x1)))
 	y1 = z - base_link_length
 	y1 = y1 
 	# x2 = 0.17677669529
@@ -152,43 +153,45 @@ if __name__ == '__main__':
 		while not rospy.is_shutdown():
 			if is_box_detected:
 				
-				state0 = np.array([0.0,0.125,0.06,0,0.03,0,0])
-				state1 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.2,cube_pose[1]])
-				step_size = 300
-				rate = rospy.Rate(30)
-				states = [state1]
-				current_state = state0
-				for i in range(10):
-					move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
-					rate.sleep()
-				time.sleep(2)
-				for m,next_state in enumerate(states):
-					i = 0
-					step = (next_state-current_state)/step_size
-					while not rospy.is_shutdown() and i <step_size:
-						move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
-						i +=1
-						current_state =current_state + step
-						rate.sleep()
-						current_state_state = next_state
+				# state0 = np.array([0.0,0.125,0.06,0,0.03,0,0])
+				# state1 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.2,cube_pose[1]])
+				# step_size = 300
+				# rate = rospy.Rate(30)
+				# states = [state1]
+				# current_state = state0
+				# for i in range(10):
+				# 	move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
+				# 	rate.sleep()
+				# time.sleep(2)
+				# for m,next_state in enumerate(states):
+				# 	i = 0
+				# 	step = (next_state-current_state)/step_size
+				# 	while not rospy.is_shutdown() and i <step_size:
+				# 		move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
+				# 		i +=1
+				# 		current_state =current_state + step
+				# 		rate.sleep()
+				# 		current_state_state = next_state
 				# exit()
 				is_cube_detected = False
 				cube_pose = None
 				print("Waiting for 20 secs")
-				time.sleep(30)
+				time.sleep(5)
 				while not is_cube_detected: print("Localizing cube")
 				if is_cube_detected:
 					print(cube_pose[0]-robot_pose[0],cube_pose[1]-robot_pose[1])
 					state0 = np.array([0.0,0.125,0.06,0,0.03,cube_pose[0]-0.2,cube_pose[1]])
-					state1 = np.array([0.2,0.00,cube_pose[2]+0.06,-pi/3,0.06,cube_pose[0]-0.2,cube_pose[1]])
-					state2 = np.array([0.2,0.00,cube_pose[2],-pi/2,0.06,cube_pose[0]-0.2,cube_pose[1]])
-					state3 = np.array([0.2,0.00,cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
-					state4 = np.array([0.01,0.01,0.3,pi/2,0.0368,cube_pose[0]-0.2,cube_pose[1]])
-					state5 = np.array([0.01,0.01,0.3,pi/2,0.0368,0,0])
-					state6 = np.array([box_pose[0],box_pose[1],0.2,-pi/3,0.0368,0,0])
+					state1 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/3,0.06,cube_pose[0]-0.2,cube_pose[1]])
+					state2 = np.array([cube_pose[0],cube_pose[1],cube_pose[2],-pi/2,0.06,cube_pose[0]-0.2,cube_pose[1]])
+					state3 = np.array([cube_pose[0],cube_pose[1],cube_pose[2],-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
+					state4 = np.array([cube_pose[0],cube_pose[1],cube_pose[2]+0.06,-pi/2,0.0368,cube_pose[0]-0.20,cube_pose[1]])
+					state5 = np.array([0.01,0.01,0.3,pi/2,0.0368,cube_pose[0]-0.2,cube_pose[1]])
+					state6 = np.array([0.01,0.01,0.3,pi/2,0.0368,box_pose[0],box_pose[1] -(0.2*(box_pose[0]/abs(box_pose[0])))])
+					print(box_pose[0]-robot_pose[0],box_pose[0]-robot_pose[0])
+					state7 = np.array([box_pose[0]-robot_pose[0],box_pose[1]-robot_pose[1],0.2,-pi/3,0.0368,box_pose[0]-(0.2*(box_pose[0]/abs(box_pose[0]))),box_pose[1]])
 					step_size = 100
 					rate = rospy.Rate(30)
-					states = [state1,state2,state3,state4,state5,state6]
+					states = [state1,state2,state3,state4,state5,state6,state7]
 					current_state = state0
 					for i in range(100):
 						move(current_state[0],current_state[1],current_state[2],current_state[3],current_state[4],current_state[5],current_state[6])
